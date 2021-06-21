@@ -34,7 +34,7 @@ public class App {
         Path dir = Paths.get(folderPath);
         Server server = null;
         try {
-            server = api.getServerById("766356648012283934").get();
+            server = api.getServerById(Config.serverID).get();
         }
         catch (Exception e) {
             displayNotification("Invalid Server ID", "Unable to access the provided server ID. Make sure that the bot is in the server, and that the ID is correct.", trayIcon, MessageType.ERROR);
