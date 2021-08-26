@@ -7,7 +7,6 @@ import java.awt.SystemTray;
 import java.awt.TrayIcon;
 import java.awt.TrayIcon.MessageType;
 import java.io.File;
-import java.io.FileReader;
 import java.io.IOException;
 import java.nio.file.FileSystems;
 import java.nio.file.Files;
@@ -22,33 +21,35 @@ import org.javacord.api.DiscordApiBuilder;
 import org.javacord.api.entity.emoji.CustomEmojiBuilder;
 import org.javacord.api.entity.emoji.KnownCustomEmoji;
 import org.javacord.api.entity.server.Server;
-import org.json.simple.JSONObject;
-import org.json.simple.parser.JSONParser;
-import org.json.simple.parser.ParseException;
+import org.javacord.api.util.logging.FallbackLoggerConfiguration;
+import org.json.JSONObject;
 
 public class App {
     static void displayNotification(String title, String description, TrayIcon trayIcon, MessageType type) throws AWTException {
         trayIcon.displayMessage(title, description, type);
     }
-    public static void main(String[] argv) throws AWTException, IOException, InterruptedException, ParseException {
+    public static void main(String[] argv) throws AWTException, IOException, InterruptedException {
         final TrayIcon trayIcon = SystemTray.isSupported() ? WinTrayIcon.createTrayIcon() : null;
-        JSONObject config = (JSONObject) new JSONParser().parse(new FileReader("./config.json"));
+        JSONObject config = new JSONObject(Files.readString(Paths.get("./config.json")));
         DiscordApi api = null;
         try {
-            api = new DiscordApiBuilder().setToken((String) config.get("token")).login().join();
+            api = new DiscordApiBuilder().setToken(config.getString("token")).login().join();
         }
         catch (Exception e) {
+            System.err.println(e);
             displayNotification("Unable to Connect to Discord", "We couldn't connect to Discord. This is most likely caused by an incorrect token.", trayIcon, MessageType.ERROR);
             System.exit(1);
         }
+        FallbackLoggerConfiguration.setDebug(true);
         final String folderPath = "\\\\UbuntuNAS\\CDN\\DiscordEmotes";
         final boolean suppressNotifications = !SystemTray.isSupported();
         Path dir = Paths.get(folderPath);
         Server server = null;
         try {
-            server = api.getServerById((String) config.get("serverID")).get();
+            server = api.getServerById(config.getString("serverID")).get();
         }
         catch (Exception e) {
+            System.err.println(e);
             displayNotification("Invalid Server ID", "Unable to access the provided server ID. Make sure that the bot is in the server, and that the ID is correct.", trayIcon, MessageType.ERROR);
             System.exit(1);
         }

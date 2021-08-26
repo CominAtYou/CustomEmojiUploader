@@ -18,7 +18,7 @@ jobs:
       with:
         ruby-version: 3.0.1
     - name: Post Result
-      if: always()
+      if: failure()
       env:
         JOB_STATUS: ${{ job.status }}
         WEBHOOK_URL: ${{ secrets.WEBHOOK_URL }}
